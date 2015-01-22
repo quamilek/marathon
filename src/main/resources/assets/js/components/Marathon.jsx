@@ -133,23 +133,12 @@ var Marathon = React.createClass({
       router.navigate("#about", {trigger: true});
     }.bind(this));
 
-    this.setPollResource(this.fetchApps);
+    this.updatePolling();
   },
 
   componentDidUpdate: function (prevProps, prevState) {
     if (prevState.modalClass !== this.state.modalClass) {
-      // No `modalClass` means the modal went from open to closed. Start
-      // polling for apps in that case.
-      // If `modalClass` is AppModalComponent start polling for tasks for that
-      // app.
-      // Otherwise stop polling since the modal went from closed to open.
-      if (this.state.modalClass === null) {
-        this.setPollResource(this.fetchApps);
-      } else if (this.state.modalClass === AppModalComponent) {
-        this.setPollResource(this.fetchTasks);
-      } else {
-        this.stopPolling();
-      }
+        this.updatePolling();
     }
 
     var route = this.state.route;
@@ -418,19 +407,30 @@ var Marathon = React.createClass({
     }
   },
 
+  updatePolling: function () {
+    var modalClass = this.state.modalClass;
+    var id = this.state.activeTabId;
+
+    if (modalClass === AppModalComponent) {
+      this.setPollResource(this.fetchTasks);
+    } else {
+      if (id === tabs[0].id) {
+        this.setPollResource(this.fetchApps);
+      } else if (id === tabs[1].id) {
+        this.setPollResource(this.fetchDeployments);
+      }
+    }
+  },
+
   activateTab: function (id) {
     this.setState({
       activeTabId: id
     });
-
-    if (id === tabs[0].id) {
-      this.setPollResource(this.fetchApps);
-    } else if (id === tabs[1].id) {
-      this.setPollResource(this.fetchDeployments);
-    }
   },
 
   routeAbout: function () {
+    /* jshint trailing:false, quotmark:false, newcap:false */
+    /* jscs:disable disallowTrailingWhitespace, validateQuoteMarks, maximumLineLength */
     return (
       <AboutModalComponent
         onDestroy={this.modalDestroy}
